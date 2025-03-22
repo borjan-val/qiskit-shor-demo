@@ -76,7 +76,7 @@ def find_order(a,N):
             if pow(a,r,N)==1: break
         return r
 
-N = 45
+N = int(input("Integer to factor: "))
 
 FACTOR_FOUND = False
 
