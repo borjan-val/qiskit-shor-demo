@@ -16,10 +16,16 @@
 
 	"runArgs": [
 		"--env-file", "api_token.env"
-	]
+	],
 
 	// Configure tool-specific properties.
-	// "customizations": {},
+	"customizations": {
+		"vscode": {
+			"settings": {
+				"python.analysis.autoImportCompletions": true
+			}
+		}
+	}
 
 	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
 	// "remoteUser": "root"
