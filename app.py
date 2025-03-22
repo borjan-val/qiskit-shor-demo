@@ -8,6 +8,16 @@ import numpy as np
 from math import gcd, floor, log
 from fractions import Fraction
 import random
+from qiskit_ibm_runtime import QiskitRuntimeService
+from qiskit_ibm_runtime import SamplerV2 as Sampler
+import os
+
+print("Connecting to IBM Quantum Qiskit Runtime Service...")
+service = QiskitRuntimeService(channel="ibm_quantum", token=os.getenv("IBM_QUANTUM_TOKEN"))
+print("Successful.")
+
+qpu_time = 0.0
+qpu_jobs = 0
 
 def mod_mult_gate(b,N):
     if gcd(b,N)>1:
@@ -58,20 +68,38 @@ def order_finding_circuit(a,N):
         return circuit
 
 def find_order(a,N):
+    global qpu_jobs, qpu_time
+
     if gcd(a,N)>1:
         print(f"Error: gcd({a},{N}) > 1")
     else:
         n = floor(log(N-1,2)) + 1
         m = 2*n
+        print("Building quantum circuit...")
         circuit = order_finding_circuit(a,N)
-        transpiled_circuit = transpile(circuit,AerSimulator())
+        print("Successful.")
+
+        # Retrieve QPU backend
+        print("Retrieving QPU backend from IBM Quantum...")
+        backend = service.least_busy(simulator=False, operational=True)
+        print("Found backend \"" + backend.name + "\".")
+
+        print("Starting circuit transpilation...")
+        transpiled_circuit = transpile(circuit,backend)
+        print("Successful.")
+
+        sampler = Sampler(mode=backend)
 
         while True:
-            result = AerSimulator().run(
-                transpiled_circuit,
-                shots=1,
-                memory=True).result()
-            y = int(result.get_memory()[0],2)
+            job = sampler.run(
+                [transpiled_circuit],
+                shots=1)
+            
+            qpu_jobs += 1
+            qpu_time += job.usage()
+
+            result = job.result()[0].data.Z.get_bitstrings()
+            y = int(result[0],2)
             r = Fraction(y/2**m).limit_denominator(N).denominator
             if pow(a,r,N)==1: break
         return r
@@ -114,3 +142,4 @@ while not FACTOR_FOUND:
             if d>1: FACTOR_FOUND = True
 
 print(f"Factor found: {d}")
+print(f"Took {qpu_time} seconds QPU time distributed over {qpu_jobs} QPU jobs.")
