@@ -172,3 +172,7 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# API token for Qiskit
+api_token.env
+*.env
