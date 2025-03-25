@@ -106,7 +106,6 @@ def find_order(a,N):
             for result in results:
                 y = int(result, 2)
                 r = Fraction(y/2**m).limit_denominator(N).denominator
-                print(f"result = {result}, y = {y}, r = {r}, a = {a}, a^r mod N = {pow(a,r,N)}")
                 if pow(a,r,N)==1:
                     if r < r_final or r_final == -1:
                         r_final = r
